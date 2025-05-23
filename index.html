@@ -1,6 +1,7 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
@@ -30,10 +31,51 @@
                 }
             }
             
-            @media only screen and (min-device-width: 480px) and (max-width: 767px) {
+            /* Default state - two columns */
+            .discography {
+                margin-top: 7vh;
+                margin-bottom: 10vh;
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                row-gap: 5em;
+                column-gap: 2em;
+                width: 100%;
+            }
+
+            /* Single column for phones */
+            @media screen and (max-width: 430px) {
                 body {
-                    margin: 2em auto;
-                    max-width: 650px;
+                    padding: 0 2em;
+                    margin: 1em auto;
+                }
+
+                .discography {
+                    grid-template-columns: 1fr;
+                    gap: 4em;
+                }
+
+                .image h1 {
+                    font-size: 3.5vh;
+                    margin-top: 2vh;
+                }
+
+                .image h3 {
+                    font-size: 2vh;
+                    margin-top: 0.5vh;
+                }
+            }
+
+            /* Adjusted typography for larger screens */
+            @media screen and (min-width: 431px) {
+                .image h1 {
+                    font-size: 2.5vh;
+                    margin-top: 1.5vh;
+                    margin-bottom: 0.2vh;
+                }
+
+                .image h3 {
+                    font-size: 1.5vh;
+                    margin-top: 0;
                 }
             }
 
@@ -92,37 +134,6 @@
                 max-height: 50vh;
                 margin-left: calc(50% - 50vw);
                 overflow: hidden;
-            }
-
-            .discography {
-                margin-top: 7vh;
-                margin-bottom: 10vh;
-                display: grid;
-                grid-template-columns: 1fr;
-                gap: 4em;
-                width: 100%;
-            }
-
-            @media only screen and (min-width: 768px) {
-                .discography {
-                    grid-template-columns: repeat(2, 1fr);
-                    gap: 3em;
-                }
-
-                body {
-                    padding: 0 4em;
-                }
-
-                .image h1 {
-                    font-size: 2.5vh;
-                    margin-top: 1.5vh;
-                    margin-bottom: 0.2vh;
-                }
-
-                .image h3 {
-                    font-size: 1.5vh;
-                    margin-top: 0;
-                }
             }
 
             .image {
