@@ -8,6 +8,10 @@
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
         <link rel="icon" href="/favicon.ico"/>
         <title>yeowool</title>
+        <script type="importmap">
+            { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.min.js" } }
+        </script>
+        <script type="module" src="assets/leaf-shadows.js"></script>
         <style>
             html {
                 -webkit-print-color-adjust: exact;
@@ -158,6 +162,21 @@
                 overflow: hidden;
             }
 
+            #leaf-shadows {
+                display: none;
+                width: 100%;
+                height: min(56.25vw, 40vh);
+                image-rendering: pixelated;
+            }
+
+            .header.live img {
+                display: none;
+            }
+
+            .header.live #leaf-shadows {
+                display: block;
+            }
+
             .image {
                 border: none;
                 margin: 0;
@@ -177,6 +196,7 @@
                 <figure id="4382224a-d3ec-4e24-995f-983bd317ae3f" class="header">
                     <br>
                     <img style="width:100vw" src="assets/yeowool404_header.jpg"/>
+                    <canvas id="leaf-shadows" aria-hidden="true"></canvas>
                 </figure>
             </header>
             <div class="page-body">
