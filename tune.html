@@ -26,7 +26,6 @@
             }
             canvas {
                 display: block;
-                background: #f7ecdd;
                 width: 100%;
                 height: 40vh;
                 image-rendering: pixelated;
@@ -230,7 +229,7 @@
             f = gui.addFolder('intro');
             f.add({ 'replay intro'() { view.playing = true; applyView(); header.replayIntro(); } }, 'replay intro');
             add(f, 'introDuration', 0, 8, 0.1).name('duration (s)');
-            add(f, 'introFromDark').name('from dark');
+            add(f, 'introSweep', ['auto', 'light', 'dark']).name('black point sweep');
 
             f = gui.addFolder('look');
             add(f, 'mosaic');
