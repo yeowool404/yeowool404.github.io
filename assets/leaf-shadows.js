@@ -50,6 +50,7 @@ export const DEFAULTS = {
     gustThreshold: 0.35,
     flutter: 0.12,
     gustFlutter: 0.7,
+    leafTwist: 0.2, // twist around the midrib, relative to the flap
     autoGust: true,
     gust: 0,
     // post (live)
@@ -200,6 +201,7 @@ const WIND_GLSL = /* glsl */ `
     uniform float uGustAmp;
     uniform float uFlutter;
     uniform float uGustFlutter;
+    uniform float uTwist;
     attribute vec2 aFlex;
     vec3 windOffset(vec3 p, float flex) {
         float w = sin(uTime * 1.1 - p.x * 0.35 + p.y * 0.12)
@@ -227,10 +229,16 @@ function windDepthMaterial(kind, windUniforms) {
             ` : /* glsl */ `
                 vec3 anchor = instanceMatrix[3].xyz;
                 float phase = fract(sin(dot(anchor, vec3(12.9898, 78.233, 37.719))) * 43758.5453) * 6.2832;
-                // each leaf flutters around its own stem
-                float a = sin(uTime * (5.0 + phase) + phase) * (uFlutter + uGustFlutter * uGust);
-                float c = cos(a), s = sin(a);
+                // each leaf flutters on its stem: mostly a flap, hinged across the base
+                // (the tip swings in and out of the leaf plane), plus a little twist
+                // around the midrib
+                float amp = uFlutter + uGustFlutter * uGust;
+                float flap = sin(uTime * (4.0 + phase * 0.6) + phase) * amp;
+                float twist = sin(uTime * (3.1 + phase * 0.5) + phase * 1.7) * amp * uTwist;
+                float c = cos(twist), s = sin(twist);
                 transformed.xz = mat2(c, -s, s, c) * transformed.xz;
+                c = cos(flap); s = sin(flap);
+                transformed.yz = mat2(c, -s, s, c) * transformed.yz;
                 vec4 wp = instanceMatrix * vec4(transformed, 1.0);
                 wp.xyz += windOffset(anchor, aFlex.x);
                 vec4 mvPosition = modelViewMatrix * wp;
@@ -271,6 +279,7 @@ export function createLeafShadows(canvas, overrides = {}) {
         uGustAmp: { value: 0 },
         uFlutter: { value: 0 },
         uGustFlutter: { value: 0 },
+        uTwist: { value: 0 },
     };
     const branchDepth = windDepthMaterial('branch', windUniforms);
     const leafDepth = windDepthMaterial('leaf', windUniforms);
@@ -472,6 +481,7 @@ export function createLeafShadows(canvas, overrides = {}) {
         windUniforms.uGustAmp.value = p.gustStrength;
         windUniforms.uFlutter.value = p.flutter;
         windUniforms.uGustFlutter.value = p.gustFlutter;
+        windUniforms.uTwist.value = p.leafTwist;
         postUniforms.uBlack.value = p.black;
         postUniforms.uWhite.value = p.white;
         postUniforms.uPoster.value = p.posterize;
