@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noindex">
+        <title>header tuner</title>
+        <script type="importmap">
+            {
+                "imports": {
+                    "three": "https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.min.js",
+                    "lil-gui": "https://cdn.jsdelivr.net/npm/lil-gui@0.20.0/+esm"
+                }
+            }
+        </script>
+        <style>
+            body {
+                margin: 0;
+                background: #f8f3ee;
+                color: #45362a;
+                font: 14px/1.5 -apple-system, BlinkMacSystemFont, sans-serif;
+            }
+            .stage {
+                position: relative;
+                overflow: hidden;
+            }
+            canvas {
+                display: block;
+                width: 100%;
+                height: 40vh;
+                image-rendering: pixelated;
+            }
+            .stage img {
+                position: absolute;
+                inset: 0;
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                object-position: top;
+                pointer-events: none;
+                display: none;
+            }
+            .notes {
+                max-width: 640px;
+                padding: 16px 24px;
+            }
+            .notes p {
+                margin: 0 0 8px;
+            }
+            #stats {
+                font-variant-numeric: tabular-nums;
+                opacity: 0.7;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="stage">
+            <canvas id="leaf-shadows"></canvas>
+            <img id="photo" src="assets/yeowool404_header.jpg" alt="">
+        </div>
+        <div class="notes">
+            <p id="stats"></p>
+            <p>Sliders change things live. Your settings stay saved in this browser.
+                When you like something, hit <b>copy settings</b> and paste them to an agent to bake into the site.</p>
+        </div>
+        <script type="module">
+            import GUI from 'lil-gui';
+            import { createLeafShadows, DEFAULTS } from './assets/leaf-shadows.js';
+
+            const STORE = 'leaf-shadows-tune';
+            const canvas = document.getElementById('leaf-shadows');
+            const photo = document.getElementById('photo');
+            const stats = document.getElementById('stats');
+            let saved = {};
+            try {
+                saved = JSON.parse(localStorage.getItem(STORE)) ?? {};
+            } catch {}
+            const view = { height: 40, photo: false, photoOpacity: 0.5, playing: true, ...saved.view };
+            const header = createLeafShadows(canvas, saved.params);
+            const p = header.params;
+
+            function changed() {
+                return Object.fromEntries(Object.entries(p).filter(([k, v]) => v !== DEFAULTS[k]));
+            }
+            function save() {
+                localStorage.setItem(STORE, JSON.stringify({ params: changed(), view }));
+                stats.textContent = `${header.stats.segments} branch segments, ${header.stats.leaves} leaves`
+                    + ` · ${Object.keys(changed()).length} settings changed from the site`;
+            }
+            function applyView() {
+                canvas.style.height = `${view.height}vh`;
+                photo.style.display = view.photo ? 'block' : 'none';
+                photo.style.opacity = view.photoOpacity;
+                view.playing ? header.play() : header.pause();
+                header.apply();
+                header.render();
+                save();
+            }
+
+            // Structural changes rebuild the tree/wall, at most once per frame.
+            let pending = false;
+            function rebuild() {
+                if (pending) return;
+                pending = true;
+                requestAnimationFrame(() => {
+                    pending = false;
+                    header.rebuild();
+                    save();
+                });
+            }
+            function live() {
+                header.apply();
+                if (!view.playing) header.render();
+                save();
+            }
+
+            const gui = new GUI({ title: 'header tuner', width: 300 });
+            const add = (folder, key, ...args) => folder.add(p, key, ...args).onChange(live);
+            const color = (folder, key) => folder.addColor(p, key).onChange(live);
+            const build = (folder, key, ...args) => folder.add(p, key, ...args).onChange(rebuild);
+
+            const actions = {
+                'new seed'() {
+                    p.seed = Math.floor(Math.random() * 100000);
+                    gui.controllersRecursive().forEach((c) => c.updateDisplay());
+                    rebuild();
+                },
+                'copy settings'() {
+                    const text = JSON.stringify(changed(), null, 2);
+                    navigator.clipboard.writeText(text).then(
+                        () => alert('copied:\n' + text),
+                        () => prompt('copy these settings:', text)
+                    );
+                },
+                'reset everything'() {
+                    Object.assign(p, DEFAULTS);
+                    gui.controllersRecursive().forEach((c) => c.updateDisplay());
+                    header.rebuild();
+                    save();
+                },
+            };
+            gui.add(actions, 'copy settings');
+            gui.add(actions, 'reset everything');
+
+            let f = gui.addFolder('preview');
+            f.add(view, 'playing').onChange(applyView);
+            f.add(view, 'height', 10, 100, 1).name('height (vh)').onChange(applyView);
+            f.add(view, 'photo').name('show old photo').onChange(applyView);
+            f.add(view, 'photoOpacity', 0, 1, 0.01).name('photo opacity').onChange(applyView);
+            add(f, 'fps', 1, 60, 1);
+            add(f, 'viewWidth', 4, 40, 0.5).name('zoom out');
+
+            f = gui.addFolder('branches');
+            f.add(actions, 'new seed');
+            build(f, 'seed', 0, 100000, 1);
+            build(f, 'limbs', 0, 12, 1);
+            build(f, 'limbLength', 0.2, 2, 0.01).name('limb length');
+            build(f, 'branchThickness', 0, 0.3, 0.005).name('thickness');
+            build(f, 'wiggle', 0, 0.5, 0.01);
+            build(f, 'droop', -0.2, 0.2, 0.005);
+            build(f, 'twigChance', 0, 1, 0.01).name('twig chance');
+            build(f, 'twigDepth', 0, 4, 1).name('twig levels');
+            build(f, 'twigLength', 0.1, 1, 0.01).name('twig length');
+            build(f, 'twigAngle', 0.1, 1.6, 0.01).name('twig angle');
+            build(f, 'canopyNear', 0.3, 8, 0.1).name('canopy near wall');
+            build(f, 'canopyFar', 0.3, 10, 0.1).name('canopy far from wall');
+
+            f = gui.addFolder('leaves');
+            build(f, 'leafChance', 0, 1, 0.01).name('leaf density');
+            build(f, 'extraLeafChance', 0, 1, 0.01).name('pair chance');
+            build(f, 'tipLeaves', 0, 12, 1).name('tip leaves');
+            build(f, 'leafSize', 0.1, 2, 0.01).name('size');
+            build(f, 'leafWidth', 0.2, 2.5, 0.01).name('width');
+            build(f, 'leafSpread', 0, 1, 0.01).name('spread from twig');
+            build(f, 'leafJitter', 0, 3, 0.01).name('angle jitter');
+
+            f = gui.addFolder('wall');
+            build(f, 'granite').name('granite on left');
+            build(f, 'seam', -8, 8, 0.1).name('granite edge');
+            color(f, 'graniteTint').name('granite tint');
+            color(f, 'wallColor').name('wall color');
+            build(f, 'ribs');
+            build(f, 'ribGap').name('rib gap');
+            build(f, 'ribSpacing', 0.1, 2, 0.01).name('rib spacing');
+            build(f, 'ribWidth', 0.02, 1, 0.01).name('rib width');
+            build(f, 'ribDepth', 0.01, 1, 0.01).name('rib depth');
+
+            f = gui.addFolder('sun + shadow');
+            add(f, 'sunAngle', -180, 180, 1).name('sun direction°');
+            add(f, 'sunHeight', 5, 89, 1).name('sun height°');
+            add(f, 'sunIntensity', 0, 10, 0.1).name('sun strength');
+            add(f, 'ambient', 0, 4, 0.05);
+            add(f, 'shadowSoftness', 0, 20, 0.5).name('softness');
+            add(f, 'shadowRes', [512, 1024, 2048, 4096]).name('shadow resolution');
+
+            f = gui.addFolder('wind');
+            add(f, 'windSpeed', 0, 4, 0.05).name('speed');
+            add(f, 'sway', 0, 0.3, 0.005).name('calm sway');
+            add(f, 'gustStrength', 0, 1, 0.01).name('gust sway');
+            add(f, 'flutter', 0, 1, 0.01).name('calm leaf flutter');
+            add(f, 'gustFlutter', 0, 3, 0.01).name('gust leaf flutter');
+            add(f, 'gustEvery', 0.5, 15, 0.1).name('gust pace (s)');
+            add(f, 'gustThreshold', 0, 0.9, 0.01).name('calmness');
+            add(f, 'autoGust').name('random gusts');
+            add(f, 'gust', 0, 1.5, 0.01).name('manual gust');
+
+            f = gui.addFolder('look');
+            add(f, 'mosaic');
+            add(f, 'cellSize', 2, 48, 1).name('mosaic cell (px)');
+            add(f, 'samples', 1, 8, 1).name('samples per cell');
+            add(f, 'gradientMap').name('gradient map');
+            add(f, 'black', 0, 1, 0.01).name('black point');
+            add(f, 'white', 0, 1, 0.01).name('white point');
+            add(f, 'posterize', 0, 16, 1).name('posterize steps');
+            for (let i = 0; i < 5; i++) color(f, `palette${i}`).name(`color ${i + 1} (dark→light)`);
+
+            applyView();
+        </script>
+    </body>
+</html>
