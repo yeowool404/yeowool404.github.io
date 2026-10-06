@@ -41,7 +41,10 @@ export const DEFAULTS = {
     ambient: 0.8,
     shadowSoftness: 20,
     shadowRes: 4096,
-    viewWidth: 16,
+    viewWidth: 16, // world units across at referenceWidth css px
+    referenceWidth: 1440,
+    narrowZoom: 0.7, // 1 = narrower screens show a crop at the same scale, 0 = squeeze the whole view in
+    narrowFocus: 2, // world x the crop slides toward as the screen narrows (2 = the granite edge)
     // wind (live)
     windSpeed: 1.05,
     sway: 0.015,
@@ -467,10 +470,13 @@ export function createLeafShadows(canvas, overrides = {}) {
         renderer.setSize(cols, rows, false);
         target.setSize(cols * sub, rows * sub);
         postUniforms.uSub.value = sub;
-        // keep viewWidth units across; the height follows the aspect
+        // keep viewWidth units across (fewer on narrow screens, so leaves keep their
+        // on-screen size instead of shrinking into the mosaic); the height follows the aspect
         const aspect = width / height;
         camera.aspect = aspect;
-        const halfH = p.viewWidth / 2 / aspect;
+        const across = p.viewWidth * Math.min(1, width / p.referenceWidth) ** p.narrowZoom;
+        const halfH = across / 2 / aspect;
+        camera.position.x = p.narrowFocus * (1 - across / p.viewWidth);
         camera.fov = THREE.MathUtils.radToDeg(2 * Math.atan(halfH / camera.position.z));
         camera.updateProjectionMatrix();
     }

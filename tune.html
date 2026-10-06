@@ -93,7 +93,7 @@
             try {
                 saved = JSON.parse(localStorage.getItem(STORE)) ?? {};
             } catch {}
-            const VIEW_DEFAULTS = { height: 40, photo: false, photoOpacity: 0.5, playing: true };
+            const VIEW_DEFAULTS = { width: 0, height: 40, photo: false, photoOpacity: 0.5, playing: true };
             const view = { ...VIEW_DEFAULTS, ...saved.view };
             const header = createLeafShadows(canvas, saved.params);
             const p = header.params;
@@ -108,6 +108,7 @@
             }
             function applyView() {
                 canvas.style.height = `${view.height}vh`;
+                document.querySelector('.stage').style.width = view.width ? `${view.width}px` : '';
                 photo.style.display = view.photo ? 'block' : 'none';
                 photo.style.opacity = view.photoOpacity;
                 view.playing ? header.play() : header.pause();
@@ -169,7 +170,10 @@
             f.add(view, 'photo').name('show fallback still').onChange(applyView);
             f.add(view, 'photoOpacity', 0, 1, 0.01).name('photo opacity').onChange(applyView);
             add(f, 'fps', 1, 60, 1);
+            f.add(view, 'width', 0, 1600, 10).name('width px (0 = full)').onChange(applyView);
             add(f, 'viewWidth', 4, 40, 0.5).name('zoom out');
+            add(f, 'narrowZoom', 0, 1, 0.01).name('narrow screen zoom');
+            add(f, 'narrowFocus', -8, 8, 0.1).name('narrow screen focus x');
 
             f = gui.addFolder('branches');
             f.add(actions, 'new seed');
