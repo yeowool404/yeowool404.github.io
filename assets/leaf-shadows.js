@@ -67,6 +67,9 @@ export const DEFAULTS = {
     palette3: '#bfa586',
     palette4: '#f7ecdd',
     fps: 24,
+    // intro (live): the black point sweeps in, so the shadows sink into a washed-out wall
+    introDuration: 2.4, // seconds, 0 = off
+    introFromDark: false, // sweep up from all-dark instead
 };
 
 // Limbs reach in from outside the frame, up and to the right of it: the sun is
@@ -482,7 +485,6 @@ export function createLeafShadows(canvas, overrides = {}) {
         windUniforms.uFlutter.value = p.flutter;
         windUniforms.uGustFlutter.value = p.gustFlutter;
         windUniforms.uTwist.value = p.leafTwist;
-        postUniforms.uBlack.value = p.black;
         postUniforms.uWhite.value = p.white;
         postUniforms.uPoster.value = p.posterize;
         postUniforms.uMap.value = p.gradientMap;
@@ -509,7 +511,19 @@ export function createLeafShadows(canvas, overrides = {}) {
     }
 
     let time = 0;
+    let introStart = null; // set on first play()
+    function introBlack() {
+        if (introStart === null || p.introDuration <= 0) return p.black;
+        const k = Math.min((performance.now() - introStart) / 1000 / p.introDuration, 1);
+        const ease = 1 - (1 - k) ** 3;
+        // From light, the black point starts infinitely low (flat cream) and the
+        // contrast ramps up; from dark, it starts at the white point (all shadow).
+        const span = p.white - p.black;
+        return p.introFromDark ? p.white - span * ease : p.white - span / Math.max(ease, 1e-4);
+    }
+
     function render() {
+        postUniforms.uBlack.value = introBlack();
         windUniforms.uTime.value = time;
         windUniforms.uGust.value = p.autoGust ? gustAt(time) : p.gust;
         renderer.setRenderTarget(target);
@@ -555,7 +569,12 @@ export function createLeafShadows(canvas, overrides = {}) {
             if (running) return;
             running = true;
             last = performance.now();
+            if (introStart === null) this.replayIntro();
             requestAnimationFrame(loop);
+        },
+        replayIntro() {
+            introStart = performance.now();
+            render();
         },
         pause() {
             running = false;

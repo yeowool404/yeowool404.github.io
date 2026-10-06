@@ -11,17 +11,22 @@
         <script type="importmap">
             { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.min.js" } }
         </script>
+        <script>
+            // Decide before first paint: devices with WebGL2 never see the fallback still.
+            if (document.createElement('canvas').getContext('webgl2')) document.documentElement.classList.add('live');
+        </script>
         <script type="module">
-            import { createLeafShadows } from './assets/leaf-shadows.js';
-            const canvas = document.getElementById('leaf-shadows');
-            const figure = canvas.closest('figure');
-            figure.classList.add('live'); // swap the fallback photo for the canvas
-            try {
-                const header = createLeafShadows(canvas);
-                if (!matchMedia('(prefers-reduced-motion: reduce)').matches) header.play();
-            } catch (e) {
-                figure.classList.remove('live');
-                throw e;
+            const fallback = () => document.documentElement.classList.remove('live');
+            if (document.documentElement.classList.contains('live')) {
+                import('./assets/leaf-shadows.js')
+                    .then(({ createLeafShadows }) => {
+                        const header = createLeafShadows(document.getElementById('leaf-shadows'));
+                        if (!matchMedia('(prefers-reduced-motion: reduce)').matches) header.play();
+                    })
+                    .catch((e) => {
+                        fallback();
+                        throw e;
+                    });
             }
         </script>
         <style>
@@ -174,18 +179,23 @@
                 overflow: hidden;
             }
 
+            .header img,
             #leaf-shadows {
-                display: none;
+                display: block;
                 width: 100%;
                 height: min(56.25vw, 40vh);
+                object-fit: cover;
                 image-rendering: pixelated;
+                /* the intro starts washed out to this color, so the swap is seamless */
+                background: #f7ecdd;
             }
 
-            .header.live img {
+            #leaf-shadows,
+            .live .header img {
                 display: none;
             }
 
-            .header.live #leaf-shadows {
+            .live #leaf-shadows {
                 display: block;
             }
 
@@ -207,7 +217,7 @@
             <header>
                 <figure id="4382224a-d3ec-4e24-995f-983bd317ae3f" class="header">
                     <br>
-                    <img style="width:100vw" src="assets/yeowool404_header.jpg"/>
+                    <img src="assets/header.png" alt=""/>
                     <canvas id="leaf-shadows" aria-hidden="true"></canvas>
                 </figure>
             </header>
