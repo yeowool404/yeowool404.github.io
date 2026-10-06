@@ -51,6 +51,24 @@
                 font-variant-numeric: tabular-nums;
                 opacity: 0.7;
             }
+            .lil-gui .controller .reset {
+                flex: none;
+                width: 18px;
+                margin-left: 4px;
+                padding: 0;
+                border: none;
+                background: none;
+                color: inherit;
+                font-size: 13px;
+                cursor: pointer;
+                visibility: hidden;
+            }
+            .lil-gui .controller.changed .reset {
+                visibility: visible;
+            }
+            .lil-gui .controller.changed .name {
+                color: #f7c98b;
+            }
         </style>
     </head>
     <body>
@@ -75,7 +93,8 @@
             try {
                 saved = JSON.parse(localStorage.getItem(STORE)) ?? {};
             } catch {}
-            const view = { height: 40, photo: false, photoOpacity: 0.5, playing: true, ...saved.view };
+            const VIEW_DEFAULTS = { height: 40, photo: false, photoOpacity: 0.5, playing: true };
+            const view = { ...VIEW_DEFAULTS, ...saved.view };
             const header = createLeafShadows(canvas, saved.params);
             const p = header.params;
 
@@ -123,6 +142,7 @@
                 'new seed'() {
                     p.seed = Math.floor(Math.random() * 100000);
                     gui.controllersRecursive().forEach((c) => c.updateDisplay());
+                    markChanged();
                     rebuild();
                 },
                 'copy settings'() {
@@ -135,6 +155,7 @@
                 'reset everything'() {
                     Object.assign(p, DEFAULTS);
                     gui.controllersRecursive().forEach((c) => c.updateDisplay());
+                    markChanged();
                     header.rebuild();
                     save();
                 },
@@ -214,6 +235,25 @@
             add(f, 'white', 0, 1, 0.01).name('white point');
             add(f, 'posterize', 0, 16, 1).name('posterize steps');
             for (let i = 0; i < 5; i++) color(f, `palette${i}`).name(`color ${i + 1} (dark→light)`);
+
+            // Per-setting reset: a ↺ appears next to anything that differs from the site.
+            const defaultsFor = (c) => (c.object === p ? DEFAULTS : c.object === view ? VIEW_DEFAULTS : null);
+            const resettable = gui.controllersRecursive().filter((c) => defaultsFor(c));
+            for (const c of resettable) {
+                const button = document.createElement('button');
+                button.className = 'reset';
+                button.textContent = '↺';
+                button.title = 'reset to site default';
+                button.addEventListener('click', () => c.setValue(defaultsFor(c)[c.property]));
+                c.domElement.append(button);
+            }
+            function markChanged() {
+                for (const c of resettable) {
+                    c.domElement.classList.toggle('changed', c.getValue() !== defaultsFor(c)[c.property]);
+                }
+            }
+            gui.onChange(markChanged);
+            markChanged();
 
             applyView();
         </script>
