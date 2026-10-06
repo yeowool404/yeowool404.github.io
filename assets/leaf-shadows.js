@@ -8,7 +8,9 @@ const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 // Brown gradient map, dark to light (sRGB, matches the site palette).
 const PALETTE = ['#221810', '#45362a', '#7a634d', '#bfa586', '#f7ecdd'];
-const SUB = 4; // scene samples per mosaic cell, per axis
+const MOSAIC = false; // off for now: render at full resolution
+const SUB = MOSAIC ? 4 : 1; // scene samples per mosaic cell, per axis
+const FPS = 24;
 const VIEW_WIDTH = 16; // world units visible across the header
 
 function mulberry32(seed) {
@@ -310,7 +312,9 @@ const postCamera = new THREE.Camera();
 function resize() {
     const { width, height } = canvas.getBoundingClientRect();
     if (!width || !height) return;
-    const cols = Math.round(THREE.MathUtils.clamp(width / 13, 48, 128));
+    const cols = MOSAIC
+        ? Math.round(THREE.MathUtils.clamp(width / 13, 48, 128))
+        : Math.round(width * Math.min(devicePixelRatio, 2));
     const rows = Math.max(1, Math.round((cols * height) / width));
     renderer.setSize(cols, rows, false);
     target.setSize(cols * SUB, rows * SUB);
@@ -350,7 +354,7 @@ let visible = true;
 let last = 0;
 function loop(now) {
     requestAnimationFrame(loop);
-    if (!visible || now - last < 1000 / 30) return;
+    if (!visible || now - last < 1000 / FPS) return;
     last = now;
     render(now / 1000);
 }
