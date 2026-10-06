@@ -67,9 +67,10 @@ export const DEFAULTS = {
     palette3: '#bfa586',
     palette4: '#f7ecdd',
     fps: 24,
-    // intro (live): the black point sweeps in, so the shadows sink into a washed-out wall
+    // intro (live): fades in from the page background while the black point sweeps in
     introDuration: 2.4, // seconds, 0 = off
-    introFromDark: false, // sweep up from all-dark instead
+    introSweep: 'auto', // 'light' = shadows sink into a washed-out wall, 'dark' = light breaks
+    // through shadow, 'auto' = whichever matches the page background
 };
 
 // Limbs reach in from outside the frame, up and to the right of it: the sun is
@@ -409,6 +410,8 @@ export function createLeafShadows(canvas, overrides = {}) {
         uPoster: { value: 0 },
         uMap: { value: true },
         uStops: { value: Array.from({ length: 5 }, () => new THREE.Vector3()) },
+        uFadeColor: { value: new THREE.Vector3() },
+        uFade: { value: 1 },
     };
     const post = new THREE.Mesh(
         new THREE.PlaneGeometry(2, 2),
@@ -421,6 +424,8 @@ export function createLeafShadows(canvas, overrides = {}) {
                 uniform float uBlack, uWhite, uPoster;
                 uniform bool uMap;
                 uniform vec3 uStops[5];
+                uniform vec3 uFadeColor;
+                uniform float uFade;
                 void main() {
                     // mosaic: average the uSub x uSub scene samples under this cell
                     ivec2 base = ivec2(gl_FragCoord.xy) * uSub;
@@ -434,10 +439,13 @@ export function createLeafShadows(canvas, overrides = {}) {
                     l = clamp((l - uBlack) / max(uWhite - uBlack, 0.001), 0.0, 1.0); // levels
                     if (uPoster > 1.0) l = floor(l * uPoster) / (uPoster - 1.0);
                     l = clamp(l, 0.0, 1.0);
-                    if (!uMap) { gl_FragColor = vec4(vec3(l), 1.0); return; }
-                    l *= 4.0;
-                    int k = int(min(floor(l), 3.0));
-                    gl_FragColor = vec4(mix(uStops[k], uStops[k + 1], l - float(k)), 1.0);
+                    vec3 color = vec3(l);
+                    if (uMap) {
+                        l *= 4.0;
+                        int k = int(min(floor(l), 3.0));
+                        color = mix(uStops[k], uStops[k + 1], l - float(k));
+                    }
+                    gl_FragColor = vec4(mix(uFadeColor, color, uFade), 1.0);
                 }
             `,
             depthTest: false,
@@ -512,18 +520,23 @@ export function createLeafShadows(canvas, overrides = {}) {
 
     let time = 0;
     let introStart = null; // set on first play()
-    function introBlack() {
-        if (introStart === null || p.introDuration <= 0) return p.black;
-        const k = Math.min((performance.now() - introStart) / 1000 / p.introDuration, 1);
+    let introFromDark = false;
+    function applyIntro() {
+        const k = introStart === null || p.introDuration <= 0
+            ? 1
+            : Math.min((performance.now() - introStart) / 1000 / p.introDuration, 1);
         const ease = 1 - (1 - k) ** 3;
-        // From light, the black point starts infinitely low (flat cream) and the
+        // From light, the black point starts infinitely low (flat light) and the
         // contrast ramps up; from dark, it starts at the white point (all shadow).
         const span = p.white - p.black;
-        return p.introFromDark ? p.white - span * ease : p.white - span / Math.max(ease, 1e-4);
+        postUniforms.uBlack.value = introFromDark
+            ? p.white - span * ease
+            : p.white - span / Math.max(ease, 1e-4);
+        postUniforms.uFade.value = ease;
     }
 
     function render() {
-        postUniforms.uBlack.value = introBlack();
+        applyIntro();
         windUniforms.uTime.value = time;
         windUniforms.uGust.value = p.autoGust ? gustAt(time) : p.gust;
         renderer.setRenderTarget(target);
@@ -573,6 +586,11 @@ export function createLeafShadows(canvas, overrides = {}) {
             requestAnimationFrame(loop);
         },
         replayIntro() {
+            // fade from whatever the page background is right now (light or dark mode)
+            const bg = getComputedStyle(document.body).backgroundColor.match(/[\d.]+/g)?.map(Number) ?? [0, 0, 0, 0];
+            const [r, g, b] = (bg[3] === 0 ? [255, 255, 255] : bg).map((v) => v / 255);
+            postUniforms.uFadeColor.value.set(r, g, b);
+            introFromDark = p.introSweep === 'auto' ? 0.2126 * r + 0.7152 * g + 0.0722 * b < 0.5 : p.introSweep === 'dark';
             introStart = performance.now();
             render();
         },
