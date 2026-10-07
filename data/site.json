@@ -1,0 +1,177 @@
+{
+    "$schema": "./site.schema.json",
+    "name": "🦊 yeowool ヨウル 여울",
+    "tagline": "🤎 brown-hearted",
+    "links": [
+        {
+            "icon": "🌐",
+            "items": [
+                { "label": "twitter", "url": "https://tw.yeowool.ing" },
+                { "label": "youtube", "url": "https://yt.yeowool.ing" },
+                { "label": "nicovideo", "url": "https://nc.yeowool.ing" },
+                { "label": "instagram", "url": "https://ig.yeowool.ing" }
+            ]
+        },
+        {
+            "icon": "⏯️",
+            "items": [
+                { "label": "bandcamp", "url": "https://bc.yeowool.ing" },
+                { "label": "soundcloud", "url": "https://sc.yeowool.ing" },
+                { "label": "spotify", "url": "https://sp.yeowool.ing" },
+                { "label": "apple music", "url": "https://am.yeowool.ing" }
+            ]
+        },
+        {
+            "icon": "✉️",
+            "items": [
+                { "label": "hi@yeowool.ing", "url": "mailto:hi@yeowool.ing" }
+            ]
+        }
+    ],
+    "discography": [
+        {
+            "id": "maboroshi",
+            "year": 2025,
+            "emoji": "🌻",
+            "title": "まぼろし",
+            "url": "https://mbrs.yeowool.ing",
+            "artwork": "assets/maboroshi_artwork_rc1.jpg",
+            "notes": ["it's all inside your head"]
+        },
+        {
+            "id": "heatstroke",
+            "year": 2025,
+            "emoji": "🌡️",
+            "title": "HEATSTROKE",
+            "url": "https://soundcloud.com/yusi-in-lowercase/heatstroke",
+            "artwork": "assets/digitaljacket-SP6-Ranked.jpg",
+            "notes": ["yusi. × yeowool", "[Stream Palette 6 -RANKED-](https://sp6.diverse.jp/)"]
+        },
+        {
+            "id": "unphased",
+            "year": 2025,
+            "emoji": "⚔️",
+            "title": "Unphased",
+            "url": "https://soundcloud.com/yeowool404/unphased",
+            "artwork": "assets/Front_2406.jpg",
+            "notes": ["yeowool vs. yusi.", "[ECLECTIC RESONANCE UPRISING 3](https://kodamasoft.net/releases/eclectic-resonance-uprising-3)"]
+        },
+        {
+            "id": "goodbye-world",
+            "year": 2025,
+            "emoji": "🚀",
+            "title": "goodbye world",
+            "url": "https://bof21.yeowool.ing",
+            "artwork": "assets/goodbye_world_artwork_rc3.jpg",
+            "notes": ["[THE BMS OF FIGHTERS 21 参加曲](https://manbow.nothing.sh/event/event.cgi?action=More_def&num=110&event=149)"]
+        },
+        {
+            "id": "rendezvous",
+            "year": 2025,
+            "emoji": "🐋",
+            "title": "rendezvous",
+            "url": "https://rdv.yeowool.ing",
+            "artwork": "assets/rendezvous_artwork_rc2.jpg",
+            "notes": ["VocaDuo2025参加曲 written with [Tyrrer](https://soundcloud.com/tyrrer)"]
+        },
+        {
+            "id": "platinum-in-my-bedroom",
+            "year": 2025,
+            "emoji": "💽",
+            "title": "platinum in my bedroom",
+            "url": "https://soundcloud.com/yeowool404/platinum-in-my-bedroom",
+            "artwork": "assets/ekisu1_artwork.jpg",
+            "notes": ["a part of ekisu compilation [quit music forever](https://ekisu.bandcamp.com/album/quit-music-forever)"]
+        },
+        {
+            "id": "not-calling-you",
+            "year": 2025,
+            "emoji": "📵",
+            "title": "not calling you",
+            "url": "https://ncy.yeowool.ing",
+            "artwork": "assets/not_calling_you_artwork.jpg",
+            "notes": ["ボカコレ2025夏ルーキー参加曲"]
+        },
+        {
+            "id": "minty",
+            "year": 2025,
+            "emoji": "🌿",
+            "title": "minty",
+            "url": "https://minty.yeowool.ing",
+            "artwork": "assets/minty_artwork.png",
+            "notes": ["cosmic radio 2025 submission"]
+        },
+        {
+            "id": "wonderstrike",
+            "year": 2025,
+            "emoji": "🐾",
+            "title": "wonderstrike!",
+            "url": "https://wonderstrike.yeowool.ing",
+            "artwork": "assets/wonderstrike_artwork.jpg",
+            "notes": ["a part of [furryjoa:sports](https://x.com/furryjoa) compilation album"]
+        },
+        {
+            "id": "breeze",
+            "year": 2024,
+            "emoji": "🌅",
+            "title": "breeze (remix)",
+            "url": "https://breeze.yeowool.ing",
+            "artwork": "assets/breeze_artwork.png",
+            "notes": ["[patterns breeze](https://youtu.be/OXDLsYPp0z0) remix contest entry"]
+        },
+        {
+            "id": "clear-turquoise",
+            "year": 2024,
+            "emoji": "🐳",
+            "title": "clear turquoise",
+            "url": "https://clearturquoise.yeowool.ing",
+            "artwork": "assets/clear_turquoise_artwork.png",
+            "notes": ["from [a fun little twitter challenge](https://twitter.com/yeowool404/status/1846566439492391380)"]
+        },
+        {
+            "id": "meteoric-blue",
+            "year": 2024,
+            "emoji": "🌠",
+            "title": "meteoric blue",
+            "url": "https://meteoricblue.yeowool.ing",
+            "artwork": "assets/meteoric_blue_artwork_rc2.png",
+            "notes": ["petet and yeowool", "Sample Pack Contest XIX entry"]
+        },
+        {
+            "id": "rkgk",
+            "year": 2024,
+            "emoji": "🧶",
+            "title": "rkgk",
+            "url": "https://rkgk.yeowool.ing",
+            "artwork": "assets/rkgk_artwork_rc1.png",
+            "notes": ["yeowool x crow", "cosmic radio 2024 submission"]
+        },
+        {
+            "id": "wanna-break-free",
+            "year": 2024,
+            "emoji": "⏰",
+            "title": "wanna break free?",
+            "url": "https://works14.yeowool.ing",
+            "artwork": "assets/a0320914401_10.jpg",
+            "notes": ["Diverse System works. 14 entry"]
+        },
+        {
+            "id": "crescent-expressway",
+            "year": 2023,
+            "emoji": "💫",
+            "title": "crescent expressway",
+            "url": "https://crescent.yeowool.ing",
+            "artwork": "assets/crescent_expressway_artwork.png",
+            "notes": ["audio secret santa 2023 entry"]
+        },
+        {
+            "id": "nostalgia",
+            "year": 2023,
+            "emoji": "🌅",
+            "title": "nostalgia",
+            "url": "https://nostalgia.yeowool.ing",
+            "artwork": "assets/nostalgia_artwork_rc4.png",
+            "notes": ["written over seven years"]
+        }
+    ]
+}
