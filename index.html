@@ -29,6 +29,43 @@
                     });
             }
         </script>
+        <script type="module">
+            // Everything under the header comes from data/site.json (shape: data/site.schema.json).
+            const el = (tag, props = {}, ...children) => {
+                const node = Object.assign(document.createElement(tag), props);
+                node.append(...children);
+                return node;
+            };
+            const link = (text, href) => el('a', { href, textContent: text, ...(href.startsWith('mailto:') ? {} : { target: '_blank' }) });
+
+            // "a part of [some album](https://...) compilation" -> text and <a> nodes.
+            const inline = (line) => line.split(/\[([^\]]+)\]\(([^)\s]+)\)/).map((part, i, parts) =>
+                i % 3 === 0 ? part : i % 3 === 1 ? link(part, parts[i + 1]) : '').filter((n) => n !== '');
+
+            const release = (r) => {
+                const figure = el('figure', { className: 'image' },
+                    el('a', { href: r.url, target: '_blank' }, el('img', { src: r.artwork, alt: r.title })),
+                    el('h1', {}, `${r.emoji} `, link(r.title, r.url)));
+                if (r.notes?.length) figure.append(el('h3', {}, ...r.notes.flatMap((line, i) => [...(i ? [el('br')] : []), ...inline(line)])));
+                if (r.id) figure.id = r.id;
+                return figure;
+            };
+
+            const site = await (await fetch('data/site.json')).json();
+            const discography = el('div', { className: 'discography' });
+            const years = [...new Set(site.discography.map((r) => r.year))].sort((a, b) => b - a);
+            for (const year of years) {
+                discography.append(el('h1', { className: 'year-header', textContent: year }),
+                    ...site.discography.filter((r) => r.year === year).map(release));
+            }
+            document.querySelector('.page-body').append(
+                el('h1', { textContent: site.name }),
+                el('h2', { textContent: site.tagline }),
+                el('br'),
+                ...site.links.map((row) => el('h2', {}, `${row.icon} `, ...row.items.flatMap((l, i) => [...(i ? [' '] : []), link(l.label, l.url)]))),
+                discography);
+            if (location.hash) document.getElementById(location.hash.slice(1))?.scrollIntoView();
+        </script>
         <style>
             html {
                 -webkit-print-color-adjust: exact;
@@ -208,191 +245,22 @@
                 flex-direction: column;
                 gap: 0.5em;
             }
+
+            .image img {
+                width: 100%;
+            }
         </style>
     </head>
     <body>
-        <article id="71c4a610-1a7a-41c8-a56b-cbe062dcbba0" class="page sans">
+        <article class="page sans">
             <header>
-                <figure id="4382224a-d3ec-4e24-995f-983bd317ae3f" class="header">
+                <figure class="header">
                     <br>
                     <img src="assets/header.png" alt=""/>
                     <canvas id="leaf-shadows" aria-hidden="true"></canvas>
                 </figure>
             </header>
-            <div class="page-body">
-                <h1 id="0fa9b7c6-ffae-4c55-a672-467df8468098" class="">🦊 yeowool ヨウル 여울</h1>
-                <h2 id="33c4b249-ccd6-4406-92dd-02f86445655c" class="">🤎 brown-hearted</h2>
-                <br>
-                <h2 id="ec3320ba-9be7-48f7-9efe-48f6af629d9b" class="">
-                    🌐  
-					<a href="https://tw.yeowool.ing" target="_blank">twitter</a>
-                    <a href="https://yt.yeowool.ing" target="_blank">youtube</a>
-                    <a href="https://nc.yeowool.ing" target="_blank">nicovideo</a>
-                    <a href="https://ig.yeowool.ing" target="_blank">instagram</a>
-                </h2>
-                <h2 id="1058f7dd-4027-43b2-9434-67cf1cede02a" class="">
-                    ⏯️ 
-					<a href="https://bc.yeowool.ing" target="_blank">bandcamp</a>
-                    <a href="https://sc.yeowool.ing" target="_blank">soundcloud</a>
-                    <a href="https://sp.yeowool.ing" target="_blank">spotify</a>
-                    <a href="https://am.yeowool.ing" target="_blank">apple music</a>
-                </h2>
-                <h2 id="64350a3b-29f6-45b0-9362-4ea4c700db1d" class="">
-                    ✉️ 
-					<a href="mailto:hi@yeowool.ing">hi@yeowool.ing</a>
-                </h2>
-                <div class="discography">
-                    <h1 class="year-header">2025</h1>
-                    <figure id="maboroshi" class="image">
-                        <a href="https://mbrs.yeowool.ing" target="_blank">
-                            <img style="width:100%" src="assets/maboroshi_artwork_rc1.jpg"/>
-                        </a>
-                        <h1 class="">
-                            🌻 <a href="https://mbrs.yeowool.ing" target="_blank">まぼろし</a>
-                        </h1>
-                        <h3 class="">it's all inside your head</h3>
-                    </figure>
-                    <figure id="heatstroke" class="image">
-                        <a href="https://soundcloud.com/yusi-in-lowercase/heatstroke" target="_blank">
-                            <img style="width:100%" src="assets/digitaljacket-SP6-Ranked.jpg"/>
-                        </a>
-                        <h1 class="">
-                            🌡️ <a href="https://soundcloud.com/yusi-in-lowercase/heatstroke" target="_blank">HEATSTROKE</a>
-                        </h1>
-                        <h3 class="">yusi. × yeowool<br><a href="https://sp6.diverse.jp/" target="_blank">Stream Palette 6 -RANKED-</a></h3>
-                    </figure>
-                    <figure id="unphased" class="image">
-                        <a href="https://soundcloud.com/yeowool404/unphased" target="_blank">
-                            <img style="width:100%" src="assets/Front_2406.jpg"/>
-                        </a>
-                        <h1 class="">
-                            ⚔️ <a href="https://soundcloud.com/yeowool404/unphased" target="_blank">Unphased</a>
-                        </h1>
-                        <h3 class="">yeowool vs. yusi.<br><a href="https://kodamasoft.net/releases/eclectic-resonance-uprising-3" target="_blank">ECLECTIC RESONANCE UPRISING 3</a></h3>
-                    </figure>
-                    <figure id="goodbye-world" class="image">
-                        <a href="https://bof21.yeowool.ing" target="_blank">
-                            <img style="width:100%" src="assets/goodbye_world_artwork_rc3.jpg"/>
-                        </a>
-                        <h1 class="">
-                            🚀 <a href="https://bof21.yeowool.ing" target="_blank">goodbye world</a>
-                        </h1>
-                        <h3 class=""><a href="https://manbow.nothing.sh/event/event.cgi?action=More_def&num=110&event=149" target="_blank">THE BMS OF FIGHTERS 21 参加曲</a></h3>
-                    </figure>
-                    <figure id="rendezvous" class="image">
-                        <a href="https://rdv.yeowool.ing" target="_blank">
-                            <img style="width:100%" src="assets/rendezvous_artwork_rc2.jpg"/>
-                        </a>
-                        <h1 class="">
-                            🐋 <a href="https://rdv.yeowool.ing" target="_blank">rendezvous</a>
-                        </h1>
-                        <h3 class="">VocaDuo2025参加曲 written with <a href="https://soundcloud.com/tyrrer" target="_blank">Tyrrer</a></h3>
-                    </figure>
-                    <figure id="platinum-in-my-bedroom" class="image">
-                        <a href="https://soundcloud.com/yeowool404/platinum-in-my-bedroom" target="_blank">
-                            <img style="width:100%" src="assets/ekisu1_artwork.jpg"/>
-                        </a>
-                        <h1 class="">
-                            💽 <a href="https://soundcloud.com/yeowool404/platinum-in-my-bedroom" target="_blank">platinum in my bedroom</a>
-                        </h1>
-                        <h3 class="">a part of ekisu compilation <a href="https://ekisu.bandcamp.com/album/quit-music-forever" target="_blank">quit music forever</a></h3>
-                    </figure>
-                    <figure id="not-calling-you" class="image">
-                        <a href="https://ncy.yeowool.ing" target="_blank">
-                            <img style="width:100%" src="assets/not_calling_you_artwork.jpg"/>
-                        </a>
-                        <h1 class="">
-                            📵 <a href="https://ncy.yeowool.ing" target="_blank">not calling you</a>
-                        </h1>
-                        <h3 class="">ボカコレ2025夏ルーキー参加曲</h3>
-                    </figure>
-                    <figure id="minty" class="image">
-                        <a href="https://minty.yeowool.ing" target="_blank">
-                            <img style="width:100%" src="assets/minty_artwork.png"/>
-                        </a>
-                        <h1 class="">
-                            🌿 <a href="https://minty.yeowool.ing" target="_blank">minty</a>
-                        </h1>
-                        <h3 class="">cosmic radio 2025 submission</h3>
-                    </figure>
-                    <figure id="wonderstrike" class="image">
-                        <a href="https://wonderstrike.yeowool.ing" target="_blank">
-                            <img style="width:100%" src="assets/wonderstrike_artwork.jpg"/>
-                        </a>
-                        <h1 class="">
-                            🐾 <a href="https://wonderstrike.yeowool.ing" target="_blank">wonderstrike!</a>
-                        </h1>
-                        <h3 class="">a part of <a href="https://x.com/furryjoa" target="_blank">furryjoa:sports</a> compilation album</h3>
-                    </figure>
-
-                    <h1 class="year-header">2024</h1>
-                    <figure id="breeze" class="image">
-                        <a href="https://breeze.yeowool.ing" target="_blank">
-                            <img style="width:100%" src="assets/breeze_artwork.png"/>
-                        </a>
-                        <h1 class="">
-                            🌅 <a href="https://breeze.yeowool.ing" target="_blank">breeze (remix)</a>
-                        </h1>
-                        <h3 class=""><a href="https://youtu.be/OXDLsYPp0z0" target="_blank">patterns breeze</a> remix contest entry</h3>
-                    </figure>
-                    <figure id="clear-turquoise" class="image">
-                        <a href="https://clearturquoise.yeowool.ing" target="_blank">
-                            <img style="width:100%" src="assets/clear_turquoise_artwork.png"/>
-                        </a>
-                        <h1 class="">
-                            🐳 <a href="https://clearturquoise.yeowool.ing" target="_blank">clear turquoise</a>
-                        </h1>
-                        <h3 class="">from <a href="https://twitter.com/yeowool404/status/1846566439492391380" target="_blank">a fun little twitter challenge</a></h3>
-                    </figure>
-                    <figure id="meteoric-blue" class="image">
-                        <a href="https://meteoricblue.yeowool.ing" target="_blank">
-                            <img style="width:100%" src="assets/meteoric_blue_artwork_rc2.png"/>
-                        </a>
-                        <h1 class="">
-                            🌠 <a href="https://meteoricblue.yeowool.ing" target="_blank">meteoric blue</a>
-                        </h1>
-                        <h3 class="">petet and yeowool<br>Sample Pack Contest XIX entry</h3>
-                    </figure>
-                    <figure id="25bb3a2b-5bd5-48a9-97c5-2c77c3dcfc78" class="image">
-                        <a href="https://rkgk.yeowool.ing" target="_blank">
-                            <img style="width:100%" src="assets/rkgk_artwork_rc1.png"/>
-                        </a>
-                        <h1 id="6741eb0b-661e-4f49-a8b1-fb50780f4064" class="">
-                            🧶 <a href="https://rkgk.yeowool.ing" target="_blank">rkgk</a>
-                        </h1>
-                        <h3 id="f1bf3dd3-b7bf-4af5-a15a-52c0151e7a3d" class="">yeowool x crow<br>cosmic radio 2024 submission</h3>
-                    </figure>
-                    <figure id="9435531d-f6a1-4620-b979-2344c70dcf8a" class="image">
-                        <a href="https://works14.yeowool.ing" target="_blank">
-                            <img style="width:100%" src="assets/a0320914401_10.jpg"/>
-                        </a>
-                        <h1 id="6bb34739-d451-4ab0-88a6-1d3519f051c4" class="">
-                            ⏰ <a href="https://works14.yeowool.ing" target="_blank">wanna break free?</a>
-                        </h1>
-                        <h3 id="3b38b8ca-fa7a-481b-9542-b59272a1a910" class="">Diverse System works. 14 entry</h3>
-                    </figure>
-
-                    <h1 class="year-header">2023</h1>
-                    <figure id="5ad4f341-ab5b-4c23-916d-068f0053c17f" class="image">
-                        <a href="https://crescent.yeowool.ing" target="_blank">
-                            <img style="width:100%" src="assets/crescent_expressway_artwork.png"/>
-                        </a>
-                        <h1 id="cafb9db5-27fe-4d94-83cb-6c441cd0cd76" class="">
-                            💫 <a href="https://crescent.yeowool.ing" target="_blank">crescent expressway</a>
-                        </h1>
-                        <h3 id="cdba00d0-1c99-4bd9-9290-3426632f01af" class="">audio secret santa 2023 entry</h3>
-                    </figure>
-                    <figure id="14e4199d-c6d1-4af7-b2ec-35f11e2efc8c" class="image">
-                        <a href="https://nostalgia.yeowool.ing" target="_blank">
-                            <img style="width:100%" src="assets/nostalgia_artwork_rc4.png"/>
-                        </a>
-                        <h1 id="4b6df384-8053-4d7b-b259-0981a8d50909" class="">
-                            🌅 <a href="https://nostalgia.yeowool.ing" target="_blank">nostalgia</a>
-                        </h1>
-                        <h3 id="ddffdc2b-efd4-44cb-8e5c-0e8f54f300b3" class="">written over seven years</h3>
-                    </figure>
-                </div>
-            </div>
+            <div class="page-body"></div>
         </article>
     </body>
 </html>

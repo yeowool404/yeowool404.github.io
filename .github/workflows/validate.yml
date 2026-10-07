@@ -1,0 +1,11 @@
+name: validate
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  site-data:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npx -y -p ajv-cli@5 -p ajv-formats@3 ajv validate -s data/site.schema.json -d data/site.json -c ajv-formats
